@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decision Tree Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        .section {
+            display: none;
+            padding: 20px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #e8f5e9;
+        }
+        button {
+            padding: 10px;
+            margin: 10px;
+            border: none;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        select, input {
+            padding: 5px;
+            font-size: 16px;
+        }
+        #prediction_result {
+            font-size: 1.5em;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .yes { color: green; }
+        .no { color: red; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="intro">
+            <h1>📊 Decision Tree Learning</h1>
+            <p>A decision tree is a flowchart-like structure where each node represents a feature (attribute), each branch represents a decision (rule), and each leaf represents an outcome.</p>
+            <button onclick="startVisualization()">Get Started</button>
+        </div>
+
+        <div id="visualization" style="display: none;">
+            <button onclick="showSection('entropy_static')">Step 1A: Sample Entropy Calculation</button>
+            <button onclick="showSection('entropy_dynamic')">Step 1B: Interactive Entropy Calculator</button>
+            <button onclick="showSection('infoGain_static')">Step 2A: Sample Information Gain</button>
+            <button onclick="showSection('infoGain_dynamic')">Step 2B: Interactive IG Calculator</button>
+            <button onclick="showSection('tree')">Step 3: Build Decision Tree</button>
+            <button onclick="showSection('prediction')">Step 4: Predict Play</button>
+
+            <!-- Sample Entropy Calculation -->
+            <div id="entropy_static" class="section">
+                <h2>Step 1A: Sample Entropy Calculation</h2>
+                <p>H(S) = - p(Yes) log₂ p(Yes) - p(No) log₂ p(No)</p>
+                <p>H(S) = <b>0.94</b></p>
+            </div>
+
+            <!-- Interactive Entropy Calculator -->
+            <div id="entropy_dynamic" class="section">
+                <h2>Step 1B: Interactive Entropy Calculator</h2>
+                <label for="yes">Number of "Yes":</label>
+                <input type="number" id="yes" value="9">
+                <label for="no">Number of "No":</label>
+                <input type="number" id="no" value="5">
+                <button onclick="calculateEntropy()">Calculate Entropy</button>
+                <p id="entropy_result"></p>
+            </div>
+
+            <!-- Sample Information Gain Calculation -->
+            <div id="infoGain_static" class="section">
+                <h2>Step 2A: Sample Information Gain Calculation</h2>
+                <p>IG(Outlook) = 0.94 - 0.693 = <b>0.247</b></p>
+            </div>
+
+            <!-- Interactive Information Gain Calculator -->
+            <div id="infoGain_dynamic" class="section">
+                <h2>Step 2B: Interactive Information Gain Calculator</h2>
+                <label for="entropyS">H(S):</label>
+                <input type="number" step="0.001" id="entropyS" value="0.94">
+                <label for="entropyAttr">H(Attribute):</label>
+                <input type="number" step="0.001" id="entropyAttr" value="0.693">
+                <button onclick="calculateIG()">Calculate IG</button>
+                <p id="infoGain_result"></p>
+            </div>
+
+            <!-- Decision Tree -->
+            <div id="tree" class="section">
+                <h2>Step 3: Building Decision Tree</h2>
+                <p>The Decision Tree is constructed as follows:</p>
+                <pre>
+                    Outlook
+                   /    |     \
+              Sunny  Overcast  Rainy
+               /  \       |      /   \
+            No    Yes    Yes   Yes   No
+                </pre>
+            </div>
+
+            <!-- Prediction -->
+            <div id="prediction" class="section">
+                <h2>Step 4: Predict Play</h2>
+                <label>Outlook: </label>
+                <select id="outlook">
+                    <option value="Sunny">Sunny</option>
+                    <option value="Overcast">Overcast</option>
+                    <option value="Rain">Rain</option>
+                </select><br>
+                <button onclick="predictPlay()">Predict</button>
+                <p id="prediction_result"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation to Next Page -->
+    <div class="container">
+        <h2>Explore More</h2>
+        <p>Click the button below to navigate to the next page for more insights.</p>
+        <a href="main.html">
+            <button>Next Page ➡️</button>
+        </a>
+    </div>
+ 
+    <script>
+        function startVisualization() {
+            document.getElementById("intro").style.display = "none";
+            document.getElementById("visualization").style.display = "block";
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(id).style.display = 'block';
+        }
+
+        function log2(x) {
+            return Math.log(x) / Math.log(2);
+        }
+
+        function calculateEntropy() {
+            let yes = parseInt(document.getElementById("yes").value);
+            let no = parseInt(document.getElementById("no").value);
+            let total = yes + no;
+
+            let entropy = 0;
+            if (total > 0) {
+                let pYes = yes / total;
+                let pNo = no / total;
+                if (pYes > 0) entropy -= pYes * log2(pYes);
+                if (pNo > 0) entropy -= pNo * log2(pNo);
+            }
+            document.getElementById("entropy_result").innerText = "Entropy: " + entropy.toFixed(3);
+        }
+
+        function calculateIG() {
+            let entropyS = parseFloat(document.getElementById("entropyS").value);
+            let entropyAttr = parseFloat(document.getElementById("entropyAttr").value);
+            document.getElementById("infoGain_result").innerText = "IG: " + (entropyS - entropyAttr).toFixed(3);
+        }
+    </script>
+
+</body>
+</html>
